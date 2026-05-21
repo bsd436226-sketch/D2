@@ -769,4 +769,122 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
             end
         end
     end
+end)-- =============== السكربت الثاني (قلتش tk) ===============
+-- ضع هذا السكربت داخل StarterGui (LocalScript)
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+local TweenService = game:GetService("TweenService")
+
+-- إنشاء واجهة الزر
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "BlackScreenGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- تصميم زر عصري
+local button = Instance.new("TextButton")
+button.Size = UDim2.new(0, 180, 0, 45)
+button.Position = UDim2.new(0.5, -90, 0.05, 0)
+button.Text = "قلتش tk"                     -- الاسم الجديد
+button.TextColor3 = Color3.fromRGB(255, 255, 255)
+button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+button.Font = Enum.Font.GothamBold
+button.TextSize = 14
+button.AutoButtonColor = false
+button.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = button
+
+local stroke = Instance.new("UIStroke")
+stroke.Thickness = 2
+stroke.Color = Color3.fromRGB(80, 80, 80)
+stroke.Transparency = 0.5
+stroke.Parent = button
+
+-- تأثير hover
+button.MouseEnter:Connect(function()
+	TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(40, 40, 40)}):Play()
+end)
+button.MouseLeave:Connect(function()
+	TweenService:Create(button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 20, 20)}):Play()
+end)
+
+-- الشاشة السوداء
+local blackFrame = Instance.new("Frame")
+blackFrame.Name = "BlackOverlay"
+blackFrame.Size = UDim2.new(1, 0, 1, 0)
+blackFrame.Position = UDim2.new(0, 0, 0, 0)
+blackFrame.BackgroundColor3 = Color3.new(0, 0, 0)
+blackFrame.BackgroundTransparency = 0
+blackFrame.Visible = false
+blackFrame.ZIndex = 10
+blackFrame.Active = true
+blackFrame.Parent = screenGui
+
+-- زر إغلاق يدوي (اختياري)
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 40, 0, 40)
+closeButton.Position = UDim2.new(1, -50, 0, 10)
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+closeButton.BackgroundTransparency = 1
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 20
+closeButton.ZIndex = 11
+closeButton.Parent = blackFrame
+
+-- متغير للتحكم
+local isActive = false  -- لتجاهل الضغط أثناء عمل الشاشة
+
+-- دالة إلغاء أي مشاهدة وإعادة الكاميرا
+local function restoreCamera()
+	camera.CameraType = Enum.CameraType.Custom
+	if player.Character then
+		local humanoid = player.Character:FindFirstChild("Humanoid")
+		if humanoid then
+			camera.CameraSubject = humanoid
+		end
+	end
+	-- إيقاف أي connection لو كنت تستخدمه من سكربتات أخرى
+	if _G.SpectateConnection then
+		_G.SpectateConnection:Disconnect()
+		_G.SpectateConnection = nil
+	end
+end
+
+-- دالة إخفاء الشاشة السوداء والعودة للوضع الطبيعي
+local function hideBlackScreen()
+	blackFrame.Visible = false
+	button.Text = "قلتش tk"
+	button.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+	restoreCamera()
+	isActive = false
+end
+
+-- دالة إظهار الشاشة وتفعيل العداد
+local function showBlackScreen()
+	if isActive then return end  -- لا تفعل شيئاً إذا كان يعمل بالفعل
+
+	isActive = true
+	blackFrame.Visible = true
+	button.Text = "جاري..." -- إشارة للتفعيل
+	button.BackgroundColor3 = Color3.fromRGB(60, 0, 0)
+
+	-- إلغاء أي تتبع كاميرا فوراً
+	restoreCamera()
+
+	-- بعد ثانية واحدة بالضبط، أخفِ الشاشة
+	task.wait(1)
+	hideBlackScreen()
+end
+
+-- الأحداث
+button.MouseButton1Click:Connect(showBlackScreen)
+
+closeButton.MouseButton1Click:Connect(function()
+	-- إذا ضغط X أثناء عمل الشاشة، أوقف المؤقت وأخفِ فوراً
+	hideBlackScreen()
 end)
